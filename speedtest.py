@@ -31,15 +31,19 @@ def run(url, count, timeout):
     """Make `count` sequential requests. Return a list of (bytes, seconds) for successful ones."""
     results = []
     failed = 0
-    for number in range(1, count + 1):
-        try:
-            size, seconds = fetch(url, timeout)
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as error:
-            failed += 1
-            print(f"request {number}/{count}: failed ({error})")
-            continue
-        results.append((size, seconds))
-        print(f"request {number}/{count}: {size / 1_000_000:.2f} MB in {seconds:.3f} s")
+    try:
+        for number in range(1, count + 1):
+            try:
+                size, seconds = fetch(url, timeout)
+            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as error:
+                failed += 1
+                print(f"request {number}/{count}: failed ({error})")
+                continue
+            results.append((size, seconds))
+            print(f"request {number}/{count}: {size / 1_000_000:.2f} MB in {seconds:.3f} s")
+    except KeyboardInterrupt:
+        # Stop on Ctrl+C but still report what was measured so far.
+        print("\ninterrupted, showing results for the finished requests")
     return results, failed
 
 
